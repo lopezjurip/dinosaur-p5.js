@@ -1,3 +1,7 @@
 # Experiments with p5.js
 
-Runs only on ES2015 supported browsers
+ES5 and ES2015 compatible.
+
+## Demo
+
+> [mrpatiwi.github.io/dinosaur-p5.js]( https://mrpatiwi.github.io/dinosaur-p5.js)
