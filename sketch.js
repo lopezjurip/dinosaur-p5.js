@@ -10,7 +10,6 @@ const width = 250;
 
 // Object instance
 let dinosaur;
-let population;
 
 function setup() {
   createCanvas(width, 250);
@@ -171,8 +170,4 @@ class Dinosaur {
         break;
     }
   }
-}
-
-function windowResized() {
-  resizeCanvas(windowWidth, windowHeight);
 }
