@@ -3,6 +3,8 @@
 const colors = {
   FLAT_WHITE: '#ECF0F1',
   FLAT_BLACK: '#202020',
+  FLAT_LIGHT_GREY: '#808C8D',
+  FLAT_DARK_GREY: '#96A5A6',
 };
 
 // Horizontal road size
@@ -11,21 +13,80 @@ const width = 250;
 // Object instance
 let dinosaur;
 
+// Game engines
+const Engines = {
+  jump: {
+    state: 40,
+    default: 40,
+    reset: () => Engines.jump.state = Engines.jump.default,
+  },
+};
+
 function setup() {
-  createCanvas(width, 250);
+  createCanvas(windowWidth, windowHeight);
   dinosaur = new Dinosaur({ speed: 3 });
+}
+
+function mouseClicked() {
+  dinosaur.state = 'jumping';
+  return false;
+}
+
+function keyPressed() {
+  // TODO: Too lazy to write crouched body points.
+  // if (keyCode === DOWN_ARROW && dinosaur.state !== 'jumping') dinosaur.state = 'crouched';
+  if (keyCode === UP_ARROW) dinosaur.state = 'jumping';
+  // return false;
+}
+
+function keyReleased() {
+  // TODO: Too lazy to write crouched body points.
+  // if (keyCode === DOWN_ARROW && dinosaur.state !== 'jumping') dinosaur.state = "running";
+  // return false;
 }
 
 function draw() {
   const step = (frame) => Math.floor(frame / 5.0) % 2;
 
   background(colors.FLAT_WHITE);
+  const center = {
+    x: windowWidth / 2.0,
+    y: windowHeight / 2.0,
+  };
 
+  // Draw land line
   push();
+  const offset = 60;
+  strokeWeight(2);
+  stroke(colors.FLAT_LIGHT_GREY);
+  line(0, center.y + offset, windowWidth, center.y + offset);
+  pop();
+
+  // Draw dinosaur
+  push();
+  if (dinosaur.state === 'jumping') {
+    const y = dinosaur.position.y + Engines.jump.state;
+    if (y <= 0) {
+      Engines.jump.reset();
+      dinosaur.state = 'running';
+      dinosaur.position.y = 0;
+    } else {
+      dinosaur.position.y = y;
+      Engines.jump.state -= 5;
+    }
+  } else {
+    Engines.jump.reset();
+  }
   // Move along X axis depending on current frame and speed modifier
-  translate((frameCount % (width / dinosaur.speed * 2)) * dinosaur.speed - width, 20);
+  // translate((frameCount % (width / dinosaur.speed * 2)) * dinosaur.speed - width, 20);
+  translate(center.x - dinosaur.center.x, center.y - dinosaur.center.y - dinosaur.position.y);
   dinosaur.draw(step(frameCount));
   pop();
+}
+
+const center = {
+  x: 10,
+  y: 10,
 }
 
 const eyes = [
@@ -35,61 +96,66 @@ const eyes = [
   [13, 1],
 ];
 
-const body = [
-  [0, 7],
-  [1, 7],
-  [1, 9],
-  [2, 9],
-  [2, 10],
-  [3, 10],
-  [3, 11],
-  [5, 11],
-  [5, 10],
-  [6, 10],
-  [6, 9],
-  [7, 9],
-  [7, 8],
-  [9, 8],
-  [9, 7],
-  [10, 7],
-  [10, 1],
-  [11, 1],
-  [11, 0],
-  [19, 0],
-  [19, 1],
-  [20, 1],
-  [20, 5],
-  [15, 5],
-  [15, 6],
-  [18, 6],
-  [18, 7],
-  [14, 7],
-  [14, 9],
-  [16, 9],
-  [16, 11],
-  [15, 11],
-  [15, 10],
-  [14, 10],
-  [14, 13],
-  [13, 13],
-  [13, 14],
-  [12, 14],
-  [12, 15],
-  [11, 15],
-  [11, 16],
-  [4, 16],
-  [4, 15],
-  [3, 15],
-  [3, 14],
-  [2, 14],
-  [2, 13],
-  [1, 13],
-  [1, 12],
-  [0, 12],
-];
+const body = {
+  standed: [
+    [0, 7],
+    [1, 7],
+    [1, 9],
+    [2, 9],
+    [2, 10],
+    [3, 10],
+    [3, 11],
+    [5, 11],
+    [5, 10],
+    [6, 10],
+    [6, 9],
+    [7, 9],
+    [7, 8],
+    [9, 8],
+    [9, 7],
+    [10, 7],
+    [10, 1],
+    [11, 1],
+    [11, 0],
+    [19, 0],
+    [19, 1],
+    [20, 1],
+    [20, 5],
+    [15, 5],
+    [15, 6],
+    [18, 6],
+    [18, 7],
+    [14, 7],
+    [14, 9],
+    [16, 9],
+    [16, 11],
+    [15, 11],
+    [15, 10],
+    [14, 10],
+    [14, 13],
+    [13, 13],
+    [13, 14],
+    [12, 14],
+    [12, 15],
+    [11, 15],
+    [11, 16],
+    [4, 16],
+    [4, 15],
+    [3, 15],
+    [3, 14],
+    [2, 14],
+    [2, 13],
+    [1, 13],
+    [1, 12],
+    [0, 12],
+  ],
+  crouched: [
+    [],
+  ],
+};
 
-const steady = {
-  left: [
+const left = {
+  steady: [
     [5, 16],
     [5, 20],
     [7, 20],
@@ -101,20 +167,7 @@ const steady = {
     [8, 17],
     [8, 16],
   ],
-  right: [
-    [9, 16],
-    [9, 17],
-    [10, 17],
-    [10, 20],
-    [12, 20],
-    [12, 19],
-    [11, 19],
-    [11, 16],
-  ],
-};
-
-const running = {
-  left: [
+  running: [
     [5, 16],
     [5, 17],
     [6, 17],
@@ -124,25 +177,60 @@ const running = {
     [7, 17],
     [7, 16],
   ],
-  right: [
+};
+
+const right = {
+  steady: [
+    [9, 16],
+    [9, 17],
+    [10, 17],
+    [10, 20],
+    [12, 20],
+    [12, 19],
+    [11, 19],
+    [11, 16],
+  ],
+  running: [
     [10, 16],
     [10, 17],
     [13, 17],
     [13, 16],
   ],
-}
+};
 
 class Dinosaur {
   constructor(options = {}) {
     this.multiplier = options.multiplier || 10;
     this.color = options.color || colors.FLAT_BLACK;
     this.speed = options.speed || 1;
+    this.state = "running";
+
+    // Get dinosaur center of gravity
+    const xs = body.standed.map(coords => coords[0]);
+    const ys = body.standed.map(coords => coords[1]);
+    const mean = (array) => (Math.max(...array) - Math.min(...array)) / 2.0;
+
+    this.dimentions = {
+      width: Math.max(...xs),
+      heigth: Math.max(...ys),
+    };
+
+    this.center = {
+      x: mean(xs) * this.multiplier,
+      y: mean(ys) * this.multiplier,
+    };
+
+    this.position = {
+      x: 0,
+      y: 0,
+    };
   }
 
   drawPoints(color, points = []) {
     beginShape();
     fill(color)
-    noStroke();
+    strokeWeight(0);
+    stroke(colors.FLAT_WHITE);
     points.forEach(pair => {
       const x = pair[0] * this.multiplier
       const y = pair[1] * this.multiplier;
@@ -152,22 +240,35 @@ class Dinosaur {
   }
 
   draw(step) {
-    this.drawPoints(this.color, body);
-    this.drawPoints(colors.FLAT_WHITE, eyes);
-
-    switch (step) {
-      case 0:
-        this.drawPoints(this.color, running.left);
-        this.drawPoints(this.color, steady.right);
-        break;
-      case 1:
-        this.drawPoints(this.color, steady.left);
-        this.drawPoints(this.color, running.right);
-        break;
-      default:
-        this.drawPoints(this.color, steady.left);
-        this.drawPoints(this.color, steady.right);
-        break;
+    // TODO: Too lazy to write crouched body points.
+    if (this.state === 'crouched') {
+      this.drawPoints(this.color, body.crouched);
+    } else {
+      this.drawPoints(this.color, body.standed);
     }
+    if (this.state === 'running' || this.state === 'crouched') {
+      switch (step) {
+        case 0:
+        this.drawPoints(this.color, left.running);
+        this.drawPoints(this.color, right.steady);
+        break;
+        case 1:
+        this.drawPoints(this.color, left.steady);
+        this.drawPoints(this.color, right.running);
+        break;
+        default:
+        this.drawPoints(this.color, left.steady);
+        this.drawPoints(this.color, right.steady);
+        break;
+      }
+    } else if (this.state === 'jumping') {
+      this.drawPoints(this.color, left.steady);
+      this.drawPoints(this.color, right.steady);
+    }
+    this.drawPoints(colors.FLAT_WHITE, eyes);
   }
+}
+
+function windowResized() {
+  resizeCanvas(windowWidth, windowHeight);
 }

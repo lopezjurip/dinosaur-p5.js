@@ -5,7 +5,34 @@
     <title>Chrome Dinosaur</title>
     <script src="./p5.min.js" charset="utf-8"></script>
     <script src="./lib/sketch.js" charset="utf-8"></script>
+    <style media="screen">
+      canvas {
+        position: fixed;
+        top: 0;
+        left: 0;
+        z-index: 1;
+      }
+
+      #contenu {
+        position: relative;
+        z-index: 2;
+      }
+
+      .text {
+        font-family: "Lucida Console", Monaco, monospace;
+      }
+      .description {
+        margin-top: -15px;
+        font-size: 80%;
+      }
+    </style>
   </head>
   <body>
+    <div id="contenu">
+      <h2 class="text">dinosaur-p5.js</h2>
+      <p class="text description">
+        Press UP ARROW &uarr; or MOUSE CLICK
+      </p>
+    </div>
   </body>
 </html>
