@@ -33,15 +33,13 @@ function mouseClicked() {
 }
 
 function keyPressed() {
-  // TODO: Too lazy to write crouched body points.
-  // if (keyCode === DOWN_ARROW && dinosaur.state !== 'jumping') dinosaur.state = 'crouched';
+  if (keyCode === DOWN_ARROW && dinosaur.state !== 'jumping') dinosaur.state = 'crouched';
   if (keyCode === UP_ARROW) dinosaur.state = 'jumping';
   // return false;
 }
 
 function keyReleased() {
-  // TODO: Too lazy to write crouched body points.
-  // if (keyCode === DOWN_ARROW && dinosaur.state !== 'jumping') dinosaur.state = "running";
+  if (keyCode === DOWN_ARROW && dinosaur.state !== 'jumping') dinosaur.state = "running";
   // return false;
 }
 
@@ -240,9 +238,8 @@ class Dinosaur {
   }
 
   draw(step) {
-    // TODO: Too lazy to write crouched body points.
     if (this.state === 'crouched') {
-      this.drawPoints(this.color, body.crouched);
+      this.drawPoints(this.color, body.standed /*body.crouched*/);
     } else {
       this.drawPoints(this.color, body.standed);
     }
