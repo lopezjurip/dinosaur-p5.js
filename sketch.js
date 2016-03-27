@@ -18,6 +18,7 @@ const Engines = {
   jump: {
     state: 40,
     default: 40,
+    acceleration: 5,
     reset: () => Engines.jump.state = Engines.jump.default,
   },
 };
@@ -34,7 +35,7 @@ function mouseClicked() {
 
 function keyPressed() {
   if (keyCode === DOWN_ARROW && dinosaur.state !== 'jumping') dinosaur.state = 'crouched';
-  if (keyCode === UP_ARROW) dinosaur.state = 'jumping';
+  else if (keyCode === UP_ARROW && dinosaur.state !== 'crouched') dinosaur.state = 'jumping';
   // return false;
 }
 
@@ -75,6 +76,7 @@ function draw() {
   } else {
     Engines.jump.reset();
   }
+
   // Move along X axis depending on current frame and speed modifier
   // translate((frameCount % (width / dinosaur.speed * 2)) * dinosaur.speed - width, 20);
   translate(center.x - dinosaur.center.x, center.y - dinosaur.center.y - dinosaur.position.y);
@@ -87,12 +89,20 @@ const center = {
   y: 10,
 }
 
-const eyes = [
-  [12, 1],
-  [12, 2],
-  [13, 2],
-  [13, 1],
-];
+const eyes = {
+  standed: [
+    [12, 1],
+    [12, 2],
+    [13, 2],
+    [13, 1],
+  ],
+  crouched: [
+    [19, 9],
+    [20, 9],
+    [20, 10],
+    [19, 10],
+  ],
+};
 
 const body = {
   standed: [
@@ -148,7 +158,49 @@ const body = {
     [0, 12],
   ],
   crouched: [
-    [],
+    [0, 8],
+    [1, 8],
+    [1, 9],
+    [3, 9],
+    [3, 10],
+    [7, 10],
+    [7, 9],
+    [15, 9],
+    [15, 10],
+    [17, 10],
+    [17, 9],
+    [18, 9],
+    [18, 8],
+    [26, 8],
+    [26, 9],
+    [27, 9],
+    [27, 14],
+    [22, 14],
+    [22, 15],
+    [25, 15],
+    [25, 16],
+    [18, 16],
+    [18, 15],
+    [16, 15],
+    [16, 16],
+    [15, 16],
+    [15, 17],
+    [16, 17],
+    [16, 18],
+    [14, 18],
+    [14, 16],
+    [5, 16],
+    [5, 15],
+    [4, 15],
+    [4, 14],
+    [3, 14],
+    [3, 13],
+    [2, 13],
+    [2, 12],
+    [1, 12],
+    [1, 11],
+    [0, 11],
+    [0, 10]
   ],
 };
 
@@ -198,9 +250,9 @@ const right = {
 
 class Dinosaur {
   constructor(options = {}) {
-    this.multiplier = options.multiplier || 10;
-    this.color = options.color || colors.FLAT_BLACK;
-    this.speed = options.speed || 1;
+    this.multiplier = options.multiplier || 10;
+    this.color = options.color || colors.FLAT_BLACK;
+    this.speed = options.speed || 1;
     this.state = "running";
 
     // Get dinosaur center of gravity
@@ -239,30 +291,31 @@ class Dinosaur {
 
   draw(step) {
     if (this.state === 'crouched') {
-      this.drawPoints(this.color, body.standed /*body.crouched*/);
+      this.drawPoints(this.color, body.crouched);
+      this.drawPoints(colors.FLAT_WHITE, eyes.crouched);
     } else {
       this.drawPoints(this.color, body.standed);
+      this.drawPoints(colors.FLAT_WHITE, eyes.standed);
     }
     if (this.state === 'running' || this.state === 'crouched') {
       switch (step) {
         case 0:
-        this.drawPoints(this.color, left.running);
-        this.drawPoints(this.color, right.steady);
-        break;
+          this.drawPoints(this.color, left.running);
+          this.drawPoints(this.color, right.steady);
+          break;
         case 1:
-        this.drawPoints(this.color, left.steady);
-        this.drawPoints(this.color, right.running);
-        break;
+          this.drawPoints(this.color, left.steady);
+          this.drawPoints(this.color, right.running);
+          break;
         default:
-        this.drawPoints(this.color, left.steady);
-        this.drawPoints(this.color, right.steady);
-        break;
+          this.drawPoints(this.color, left.steady);
+          this.drawPoints(this.color, right.steady);
+          break;
       }
     } else if (this.state === 'jumping') {
       this.drawPoints(this.color, left.steady);
       this.drawPoints(this.color, right.steady);
     }
-    this.drawPoints(colors.FLAT_WHITE, eyes);
   }
 }
 
