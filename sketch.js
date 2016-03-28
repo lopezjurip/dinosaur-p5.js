@@ -84,11 +84,6 @@ function draw() {
   pop();
 }
 
-const center = {
-  x: 10,
-  y: 10,
-}
-
 const eyes = {
   standed: [
     [12, 1],
