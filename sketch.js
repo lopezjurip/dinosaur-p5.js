@@ -76,6 +76,14 @@ function draw() {
   line(0, center.y + offset, windowWidth, center.y + offset);
   pop();
 
+  if (dinosaurs[0].position.x + dinosaurs[0].center.x < dinosaurs[1].position.x + dinosaurs[1].center.x) {
+    dinosaurs[0].facing = 'right';
+    dinosaurs[1].facing = 'left';
+  } else {
+    dinosaurs[0].facing = 'left';
+    dinosaurs[1].facing = 'right';
+  }
+
   // Draw dinosaur
   dinosaurs.forEach(dinosaur => {
     push();
@@ -289,26 +297,34 @@ class Dinosaur {
       y: mean(ys) * this.multiplier,
     };
 
-    const reverse = (coords) => coords.map(pair => [this.dimentions.width - pair[0], pair[1]]);
+    this.reverse = (coords) => coords.map(pair => [this.dimentions.width - pair[0], pair[1]]);
+  }
 
-    this.body = this.facing === 'right' ? body : {
-      standed: reverse(body.standed),
-      crouched: reverse(body.crouched),
+  get body() {
+    return this.facing === 'right' ? body : {
+      standed: this.reverse(body.standed),
+      crouched: this.reverse(body.crouched),
     };
+  }
 
-    this.eyes = this.facing === 'right' ? eyes : {
-      standed: reverse(eyes.standed),
-      crouched: reverse(eyes.crouched),
+  get eyes() {
+    return this.facing === 'right' ? eyes : {
+      standed: this.reverse(eyes.standed),
+      crouched: this.reverse(eyes.crouched),
     };
+  }
 
-    this.left = this.facing === 'right' ? left : {
-      steady: reverse(left.steady),
-      running: reverse(left.running),
+  get left() {
+    return this.facing === 'right' ? left : {
+      steady: this.reverse(left.steady),
+      running: this.reverse(left.running),
     };
+  }
 
-    this.right = this.facing === 'right' ? right : {
-      steady: reverse(right.steady),
-      running: reverse(right.running),
+  get right() {
+    return this.facing === 'right' ? right : {
+      steady: this.reverse(right.steady),
+      running: this.reverse(right.running),
     };
   }
 
@@ -373,7 +389,7 @@ class Dinosaur {
     } else if (this.state.down) {
       this.drawPoints(this.color, this.body.crouched);
       this.drawPoints(colors.FLAT_WHITE, this.eyes.crouched);
-      this.run(step);
+      this.run(-1);
 
     } else if (this.state.right) {
       this.drawPoints(this.color, this.body.standed);
