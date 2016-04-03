@@ -7,40 +7,55 @@ const colors = {
   FLAT_DARK_GREY: '#96A5A6',
 };
 
+const MOVEMENTS = {
+  UP: 'UP',
+  DOWN: 'DOWN',
+  RIGHT: 'RIGHT',
+  LEFT: 'LEFT',
+};
+
 // Horizontal road size
 const width = 250;
 
 // Object instance
-let dinosaur;
-
-// Game engines
-const Engines = {
-  jump: {
-    state: 40,
-    default: 40,
-    acceleration: 5,
-    reset: () => Engines.jump.state = Engines.jump.default,
-  },
-};
+const dinosaurs = [];
 
 function setup() {
   createCanvas(windowWidth, windowHeight);
-  dinosaur = new Dinosaur({ speed: 3 });
-}
-
-function mouseClicked() {
-  dinosaur.state = 'jumping';
-  return false;
+  dinosaurs.push(
+    new Dinosaur({ speed: 5, position: { x: -140 } }),
+    new Dinosaur({ speed: 5, position: { x: 140 }, color: colors.FLAT_DARK_GREY, facing: 'left' })
+  );
 }
 
 function keyPressed() {
-  if (keyCode === DOWN_ARROW && dinosaur.state !== 'jumping') dinosaur.state = 'crouched';
-  else if (keyCode === UP_ARROW && dinosaur.state !== 'crouched') dinosaur.state = 'jumping';
+  if (keyCode === DOWN_ARROW) dinosaurs[0].press(MOVEMENTS.DOWN);
+  else if (keyCode === UP_ARROW) dinosaurs[0].press(MOVEMENTS.UP);
+  else if (keyCode === LEFT_ARROW) dinosaurs[0].press(MOVEMENTS.LEFT);
+  else if (keyCode === RIGHT_ARROW) dinosaurs[0].press(MOVEMENTS.RIGHT);
+  // return false;
+}
+
+function keyTyped() {
+  const K = key.toUpperCase();
+  if (K === 'S') dinosaurs[1].press(MOVEMENTS.DOWN);
+  else if (K === 'W') dinosaurs[1].press(MOVEMENTS.UP);
+  else if (K === 'A') dinosaurs[1].press(MOVEMENTS.LEFT);
+  else if (K === 'D') dinosaurs[1].press(MOVEMENTS.RIGHT);
   // return false;
 }
 
 function keyReleased() {
-  if (keyCode === DOWN_ARROW && dinosaur.state !== 'jumping') dinosaur.state = "running";
+  if (keyCode === DOWN_ARROW) dinosaurs[0].release(MOVEMENTS.DOWN);
+  else if (keyCode === UP_ARROW) dinosaurs[0].release(MOVEMENTS.UP);
+  else if (keyCode === LEFT_ARROW) dinosaurs[0].release(MOVEMENTS.LEFT);
+  else if (keyCode === RIGHT_ARROW) dinosaurs[0].release(MOVEMENTS.RIGHT);
+
+  const K = key.toUpperCase();
+  if (K === 'S') dinosaurs[1].release(MOVEMENTS.DOWN);
+  else if (K === 'W') dinosaurs[1].release(MOVEMENTS.UP);
+  else if (K === 'A') dinosaurs[1].release(MOVEMENTS.LEFT);
+  else if (K === 'D') dinosaurs[1].release(MOVEMENTS.RIGHT);
   // return false;
 }
 
@@ -62,26 +77,14 @@ function draw() {
   pop();
 
   // Draw dinosaur
-  push();
-  if (dinosaur.state === 'jumping') {
-    const y = dinosaur.position.y + Engines.jump.state;
-    if (y <= 0) {
-      Engines.jump.reset();
-      dinosaur.state = 'running';
-      dinosaur.position.y = 0;
-    } else {
-      dinosaur.position.y = y;
-      Engines.jump.state -= 5;
-    }
-  } else {
-    Engines.jump.reset();
-  }
-
-  // Move along X axis depending on current frame and speed modifier
-  // translate((frameCount % (width / dinosaur.speed * 2)) * dinosaur.speed - width, 20);
-  translate(center.x - dinosaur.center.x, center.y - dinosaur.center.y - dinosaur.position.y);
-  dinosaur.draw(step(frameCount));
-  pop();
+  dinosaurs.forEach(dinosaur => {
+    push();
+    // Move along X axis depending on current frame and speed modifier
+    // translate((frameCount % (width / dinosaur.speed * 2)) * dinosaur.speed - width, 20);
+    translate(center.x - dinosaur.center.x + dinosaur.position.x, center.y - dinosaur.center.y - dinosaur.position.y);
+    dinosaur.draw(step(frameCount));
+    pop();
+  });
 }
 
 const eyes = {
@@ -243,12 +246,33 @@ const right = {
   ],
 };
 
+// Game engines
+const Engine = function() {
+  this.jump = {
+    state: 40,
+    default: 40,
+    acceleration: 5,
+    reset() { this.state = this.default },
+  };
+};
+
 class Dinosaur {
   constructor(options = {}) {
     this.multiplier = options.multiplier || 10;
     this.color = options.color || colors.FLAT_BLACK;
     this.speed = options.speed || 1;
-    this.state = "running";
+    this.facing = options.facing || 'right';
+    this.position = Object.assign({
+      x: 0,
+      y: 0,
+    }, options.position);
+    this.engine = new Engine();
+    this.state = {
+      up: false,
+      left: false,
+      right: false,
+      down: false,
+    };
 
     // Get dinosaur center of gravity
     const xs = body.standed.map(coords => coords[0]);
@@ -265,10 +289,40 @@ class Dinosaur {
       y: mean(ys) * this.multiplier,
     };
 
-    this.position = {
-      x: 0,
-      y: 0,
+    const reverse = (coords) => coords.map(pair => [this.dimentions.width - pair[0], pair[1]]);
+
+    this.body = this.facing === 'right' ? body : {
+      standed: reverse(body.standed),
+      crouched: reverse(body.crouched),
     };
+
+    this.eyes = this.facing === 'right' ? eyes : {
+      standed: reverse(eyes.standed),
+      crouched: reverse(eyes.crouched),
+    };
+
+    this.left = this.facing === 'right' ? left : {
+      steady: reverse(left.steady),
+      running: reverse(left.running),
+    };
+
+    this.right = this.facing === 'right' ? right : {
+      steady: reverse(right.steady),
+      running: reverse(right.running),
+    };
+  }
+
+  press(keyCode) {
+    if (keyCode === MOVEMENTS.DOWN) this.state.down = true;
+    else if (keyCode === MOVEMENTS.UP) this.state.up = true;
+    else if (keyCode === MOVEMENTS.LEFT) this.state.left = true;
+    else if (keyCode === MOVEMENTS.RIGHT) this.state.right = true;
+  }
+
+  release(keyCode) {
+    if (keyCode === MOVEMENTS.DOWN) this.state.down = false;
+    else if (keyCode === MOVEMENTS.LEFT) this.state.left = false;
+    else if (keyCode === MOVEMENTS.RIGHT) this.state.right = false;
   }
 
   drawPoints(color, points = []) {
@@ -284,32 +338,59 @@ class Dinosaur {
     endShape(CLOSE);
   }
 
-  draw(step) {
-    if (this.state === 'crouched') {
-      this.drawPoints(this.color, body.crouched);
-      this.drawPoints(colors.FLAT_WHITE, eyes.crouched);
-    } else {
-      this.drawPoints(this.color, body.standed);
-      this.drawPoints(colors.FLAT_WHITE, eyes.standed);
+  run(step) {
+    switch (step) {
+      case 0:
+        this.drawPoints(this.color, this.left.running);
+        this.drawPoints(this.color, this.right.steady);
+        break;
+      case 1:
+        this.drawPoints(this.color, this.left.steady);
+        this.drawPoints(this.color, this.right.running);
+        break;
+      default:
+        this.drawPoints(this.color, this.left.steady);
+        this.drawPoints(this.color, this.right.steady);
+        break;
     }
-    if (this.state === 'running' || this.state === 'crouched') {
-      switch (step) {
-        case 0:
-          this.drawPoints(this.color, left.running);
-          this.drawPoints(this.color, right.steady);
-          break;
-        case 1:
-          this.drawPoints(this.color, left.steady);
-          this.drawPoints(this.color, right.running);
-          break;
-        default:
-          this.drawPoints(this.color, left.steady);
-          this.drawPoints(this.color, right.steady);
-          break;
+  }
+
+  draw(step) {
+    if (this.state.up) {
+      const y = this.position.y + this.engine.jump.state;
+      if (y <= 0) {
+        this.engine.jump.reset();
+        this.state.up = false;
+        this.position.y = 0;
+      } else {
+        this.position.y = y;
+        this.engine.jump.state -= this.engine.jump.acceleration;
       }
-    } else if (this.state === 'jumping') {
-      this.drawPoints(this.color, left.steady);
-      this.drawPoints(this.color, right.steady);
+      this.drawPoints(this.color, this.body.standed);
+      this.drawPoints(colors.FLAT_WHITE, this.eyes.standed);
+      this.run(-1);
+
+    } else if (this.state.down) {
+      this.drawPoints(this.color, this.body.crouched);
+      this.drawPoints(colors.FLAT_WHITE, this.eyes.crouched);
+      this.run(step);
+
+    } else if (this.state.right) {
+      this.drawPoints(this.color, this.body.standed);
+      this.drawPoints(colors.FLAT_WHITE, this.eyes.standed);
+      this.position.x += this.speed;
+      this.run(step);
+
+    } else if (this.state.left) {
+      this.drawPoints(this.color, this.body.standed);
+      this.drawPoints(colors.FLAT_WHITE, this.eyes.standed);
+      this.position.x -= this.speed;
+      this.run(step);
+
+    } else {
+      this.drawPoints(this.color, this.body.standed);
+      this.drawPoints(colors.FLAT_WHITE, this.eyes.standed);
+      this.run(-1);
     }
   }
 }
