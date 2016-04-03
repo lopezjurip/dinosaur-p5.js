@@ -384,28 +384,25 @@ class Dinosaur {
       }
       this.drawPoints(this.color, this.body.standed);
       this.drawPoints(colors.FLAT_WHITE, this.eyes.standed);
-      this.run(-1);
 
     } else if (this.state.down) {
       this.drawPoints(this.color, this.body.crouched);
       this.drawPoints(colors.FLAT_WHITE, this.eyes.crouched);
-      this.run(-1);
-
-    } else if (this.state.right) {
-      this.drawPoints(this.color, this.body.standed);
-      this.drawPoints(colors.FLAT_WHITE, this.eyes.standed);
-      this.position.x += this.speed;
-      this.run(step);
-
-    } else if (this.state.left) {
-      this.drawPoints(this.color, this.body.standed);
-      this.drawPoints(colors.FLAT_WHITE, this.eyes.standed);
-      this.position.x -= this.speed;
-      this.run(step);
 
     } else {
       this.drawPoints(this.color, this.body.standed);
       this.drawPoints(colors.FLAT_WHITE, this.eyes.standed);
+    }
+
+    if (this.state.right) {
+      this.position.x += this.speed;
+      this.run(step);
+
+    } else if (this.state.left) {
+      this.position.x -= this.speed;
+      this.run(step);
+
+    } else {
       this.run(-1);
     }
   }
